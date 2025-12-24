@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bitcoin (BTC) Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+:root {
+/* Base Theme from Original */
+--bg-color: #0a0a0a;
+--bg-color-lighter: #111111;
+--surface-color: #1a1a1a;
+--surface-color-alt: #141414;
+--primary-text-color: #e0e0e0;
+--secondary-text-color: #888888;
+--border-color: #2a2a2a;
+--hover-bg-color: #222222;
+--success-color: #4ade80;
+--error-color: #f87171;
+
+/* Gold Theme Overrides */
+--gold-color: #FFD700;
+--gold-dim: rgba(255, 215, 0, 0.15);
+--accent-color: var(--gold-color);
+
+--section-bg: #0f0f0f;
+--section-border: #2a2a2a;
+--section-header-bg: #151515;
+--section-th-bg: #121212;
+--section-title-color: var(--gold-color);
+}
+
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+}
+
+body {
+font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+background-color: var(--bg-color);
+color: var(--primary-text-color);
+line-height: 1.5;
+min-height: 100vh;
+}
+
+/* Navigation */
+.nav-bar {
+padding: 1rem 2rem;
+border-bottom: 1px solid var(--border-color);
+background-color: var(--bg-color-lighter);
+display: flex;
+align-items: center;
+}
+
+.back-link {
+color: var(--secondary-text-color);
+text-decoration: none;
+font-size: 0.9rem;
+font-weight: 500;
+display: inline-flex;
+align-items: center;
+gap: 0.5rem;
+transition: color 0.2s ease, transform 0.1s ease;
+padding: 0.5rem 1rem;
+border: 1px solid var(--border-color);
+border-radius: 3px;
+background-color: var(--surface-color);
+}
+
+.back-link:hover {
+color: var(--gold-color);
+border-color: var(--gold-color);
+transform: translateY(-1px);
+background-color: var(--gold-dim);
+}
+
+main {
+padding: 1.25rem;
+max-width: 1280px;
+margin: 0 auto;
+}
+
+/* Header Stats Grid */
+.stats-grid {
+display: grid;
+grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+gap: 1rem;
+margin-bottom: 1.5rem;
+}
+
+.stat-card {
+background-color: var(--surface-color);
+border: 1px solid var(--border-color);
+padding: 1.25rem;
+border-radius: 3px;
+}
+
+.stat-label {
+font-size: 0.8rem;
+color: var(--secondary-text-color);
+text-transform: uppercase;
+letter-spacing: 0.05em;
+margin-bottom: 0.5rem;
+}
+
+.stat-value {
+font-size: 1.5rem;
+font-weight: 600;
+color: var(--primary-text-color);
+}
+
+.stat-value.gold {
+color: var(--gold-color);
+}
+
+.stat-sub {
+font-size: 0.8rem;
+margin-top: 0.25rem;
+}
+
+.text-green { color: var(--success-color); }
+.text-red { color: var(--error-color); }
+
+/* Chart Section */
+.chart-section {
+background-color: var(--section-bg);
+border: 1px solid var(--section-border);
+border-radius: 3px;
+margin-bottom: 1.5rem;
+padding: 1.5rem;
+position: relative;
+}
+
+.section-title {
+font-size: 1.1rem;
+font-weight: 600;
+color: var(--section-title-color);
+margin-bottom: 1rem;
+display: flex;
+align-items: center;
+gap: 0.5rem;
+}
+
+.chart-container {
+position: relative;
+height: 400px;
+width: 100%;
+}
+
+/* Table Section */
+.table-section {
+background-color: var(--section-bg);
+border: 1px solid var(--section-border);
+border-radius: 3px;
+min-height: 400px;
+display: flex;
+flex-direction: column;
+}
+
+.table-container {
+flex: 1;
+overflow: auto;
+}
+
+.market-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 0.85rem;
+}
+
+.market-table th,
+.market-table td {
+padding: 0.75rem 1rem;
+text-align: left;
+border-bottom: 1px solid var(--border-color);
+}
+
+.market-table th {
+background-color: var(--section-th-bg);
+font-weight: 600;
+position: sticky;
+top: 0;
+z-index: 10;
+color: var(--secondary-text-color);
+font-size: 0.75rem;
+text-transform: uppercase;
+}
+
+.market-table tr:hover {
+background-color: var(--hover-bg-color);
+}
+
+.rank-badge {
+display: inline-block;
+width: 24px;
+height: 24px;
+line-height: 24px;
+text-align: center;
+border-radius: 50%;
+background-color: var(--surface-color-alt);
+color: var(--secondary-text-color);
+font-size: 0.75rem;
+font-weight: 600;
+}
+
+.trust-score {
+display: inline-block;
+padding: 0.2rem 0.5rem;
+border-radius: 2px;
+font-size: 0.7rem;
+font-weight: 600;
+background-color: var(--surface-color-alt);
+}
+.trust-green { color: var(--success-color); border: 1px solid rgba(74, 222, 128, 0.3); }
+.trust-yellow { color: var(--warning-color); border: 1px solid rgba(251, 191, 36, 0.3); }
+
+/* Utility */
+.loading-overlay {
+position: absolute;
+inset: 0;
+background-color: rgba(10, 10, 10, 0.8);
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+z-index: 50;
+color: var(--gold-color);
+font-weight: 500;
+}
+
+.spinner {
+width: 30px;
+height: 30px;
+border: 3px solid var(--border-color);
+border-top-color: var(--gold-color);
+border-radius: 50%;
+animation: spin 1s linear infinite;
+margin-bottom: 1rem;
+}
+
+.hidden { display: none !important; }
+
+@keyframes spin { 100% { transform: rotate(360deg); } }
+
+@media (max-width: 768px) {
+.nav-bar { padding: 1rem; }
+.stats-grid { grid-template-columns: 1fr; }
+main { padding: 0.75rem; }
+.chart-container { height: 300px; }
+}
+</style></head>
+<body>
+
+<nav class="nav-bar">
+<a href="index.html" class="back-link">
+← Back to Home
+</a>
+</nav>
+
+<main>
+<!-- Top Stats -->
+<div class="stats-grid">
+<div class="stat-card">
+<div class="stat-label">BTC Price</div>
+<div class="stat-value gold" id="btc-price">--</div>
+<div class="stat-sub" id="btc-change">--</div>
+</div>
+<div class="stat-card">
+<div class="stat-label">Market Cap</div>
+<div class="stat-value" id="btc-mcap">--</div>
+<div class="stat-sub text-green">Rank #1</div>
+</div>
+<div class="stat-card">
+<div class="stat-label">24h Volume</div>
+<div class="stat-value" id="btc-volume">--</div>
+<div class="stat-sub">Global Trading</div>
+</div>
+<div class="stat-card">
+<div class="stat-label">All Time High</div>
+<div class="stat-value" id="btc-ath">--</div>
+<div class="stat-sub text-red" id="btc-ath-date">--</div>
+</div>
+</div>
+
+<!-- Chart Section -->
+<section class="chart-section">
+<div class="section-title">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--gold-color);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+Bitcoin Price (30 Days)
+</div>
+<div class="chart-container">
+<canvas id="btcChart"></canvas>
+</div>
+<div id="chart-loading" class="loading-overlay">
+<div class="spinner"></div>
+<span>Loading Chart Data...</span>
+</div>
+</section>
+
+<!-- Market Table Section -->
+<section class="table-section">
+<div style="padding: 1rem; border-bottom: 1px solid var(--border-color); background-color: var(--section-header-bg);">
+<div class="section-title" style="margin: 0;">
+Top Markets by Volume
+</div>
+</div>
+<div class="table-container">
+<table class="market-table">
+<thead>
+<tr>
+<th style="width: 60px;">#</th>
+<th>Exchange</th>
+<th>Pair</th>
+<th style="text-align: right;">Price (USD)</th>
+<th style="text-align: right;">Volume (24h)</th>
+<th style="text-align: right;">Spread</th>
+<th style="text-align: right;">Trust</th>
+</tr>
+</thead>
+<tbody id="market-table-body">
+<!-- Rows injected by JS -->
+</tbody>
+</table>
+</div>
+<div id="table-loading" class="loading-overlay">
+<div class="spinner"></div>
+<span>Loading Markets...</span>
+</div>
+</section>
+</main>
+
+<script>
+(function() {
+'use strict';
+
+const API_BASE = 'https://api.coingecko.com/api/v3';
+const COIN_ID = 'bitcoin';
+
+const elements = {
+price: document.getElementById('btc-price'),
+change: document.getElementById('btc-change'),
+mcap: document.getElementById('btc-mcap'),
+volume: document.getElementById('btc-volume'),
+ath: document.getElementById('btc-ath'),
+athDate: document.getElementById('btc-ath-date'),
+tableBody: document.getElementById('market-table-body'),
+chartLoading: document.getElementById('chart-loading'),
+tableLoading: document.getElementById('table-loading')
+};
+
+const formatCurrency = (val) => {
+if (!val) return '$0.00';
+return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
+};
+
+const formatCompact = (val) => {
+if (!val) return '$0';
+return new Intl.NumberFormat('en-US', { notation: "compact", style: 'currency', currency: 'USD' }).format(val);
+};
+
+// Fetch Basic Data & Chart Data
+async function init() {
+try {
+// Parallel fetch for basic data and market chart
+const [basicRes, chartRes] = await Promise.all([
+fetch(`${API_BASE}/coins/${COIN_ID}?localization=false&tickers=false&community_data=false&developer_data=false`),
+fetch(`${API_BASE}/coins/${COIN_ID}/market_chart?vs_currency=usd&days=30&interval=daily`)
+]);
+
+if (!basicRes.ok || !chartRes.ok) throw new Error('API Error');
+
+const basicData = await basicRes.json();
+const chartData = await chartRes.json();
+
+renderStats(basicData);
+renderChart(chartData);
+
+// Fetch Tickers separately for table (to avoid too large initial payload if needed, though standard here)
+// CoinGecko ticker endpoint is heavy, so we request a limited set
+const tickerRes = await fetch(`${API_BASE}/coins/${COIN_ID}/tickers?include_exchange_logo=false&page=1&order=volume_desc`);
+if(tickerRes.ok) {
+const tickerData = await tickerRes.json();
+renderTable(tickerData.tickers);
+} else {
+elements.tableLoading.classList.add('hidden');
+}
+
+} catch (err) {
+console.error(err);
+elements.tableLoading.innerHTML = '<span class="text-red">Error loading data</span>';
+elements.chartLoading.innerHTML = '<span class="text-red">Error loading chart</span>';
+}
+}
+
+function renderStats(data) {
+const market = data.market_data;
+if (!market) return;
+
+elements.price.textContent = formatCurrency(market.current_price.usd);
+
+const change = market.price_change_percentage_24h;
+elements.change.textContent = `${change > 0 ? '+' : ''}${change.toFixed(2)}% (24h)`;
+elements.change.className = `stat-sub ${change >= 0 ? 'text-green' : 'text-red'}`;
+
+elements.mcap.textContent = formatCompact(market.market_cap.usd);
+elements.volume.textContent = formatCompact(market.total_volume.usd);
+
+elements.ath.textContent = formatCurrency(market.ath.usd);
+elements.athDate.textContent = `ATH: ${new Date(market.ath_date.usd).toLocaleDateString()}`;
+}
+
+function renderChart(data) {
+elements.chartLoading.classList.add('hidden');
+const ctx = document.getElementById('btcChart').getContext('2d');
+
+// Prepare data
+const prices = data.prices.map(p => p[1]);
+const labels = data.prices.map(p => {
+const date = new Date(p[0]);
+return `${date.getMonth() + 1}/${date.getDate()}`;
+});
+
+// Gradient
+const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+gradient.addColorStop(0, 'rgba(255, 215, 0, 0.5)'); // Gold
+gradient.addColorStop(1, 'rgba(255, 215, 0, 0.0)');
+
+new Chart(ctx, {
+type: 'line',
+data: {
+labels: labels,
+datasets: [{
+label: 'Price (USD)',
+data: prices,
+borderColor: '#FFD700',
+backgroundColor: gradient,
+borderWidth: 2,
+pointRadius: 0,
+pointHoverRadius: 4,
+fill: true,
+tension: 0.4
+}]
+},
+options: {
+responsive: true,
+maintainAspectRatio: false,
+plugins: {
+legend: { display: false },
+tooltip: {
+mode: 'index',
+intersect: false,
+backgroundColor: '#1a1a1a',
+titleColor: '#e0e0e0',
+bodyColor: '#FFD700',
+borderColor: '#2a2a2a',
+borderWidth: 1
+}
+},
+scales: {
+x: {
+grid: { color: 'rgba(255, 255, 255, 0.05)' },
+ticks: { color: '#888', maxTicksLimit: 8 }
+},
+y: {
+grid: { color: 'rgba(255, 255, 255, 0.05)' },
+ticks: {
+color: '#888',
+callback: function(value) { return '$' + value.toLocaleString(); }
+}
+}
+},
+interaction: {
+mode: 'nearest',
+axis: 'x',
+intersect: false
+}
+}
+});
+}
+
+function renderTable(tickers) {
+elements.tableLoading.classList.add('hidden');
+
+// Filter for stable pairs or BTC/USD primarily, take top 10
+const filtered = tickers
+.filter(t => t.target === 'USDT' || t.target === 'USD' || t.target === 'USDC')
+.slice(0, 15);
+
+const html = filtered.map((t, index) => {
+const spread = ((t.bid_ask_spread_percentage || 0)).toFixed(2);
+const isGreen = t.trust_score === 'green';
+const trustClass = isGreen ? 'trust-green' : 'trust-yellow';
+
+return `
+<tr>
+<td><span class="rank-badge">${index + 1}</span></td>
+<td style="font-weight: 500;">${t.market.name}</td>
+<td style="color: var(--secondary-text-color);">BTC / ${t.target}</td>
+<td style="text-align: right; font-weight: 500;">${t.last_traded_price ? '$' + parseFloat(t.last_traded_price).toLocaleString() : '-'}</td>
+<td style="text-align: right;">${t.converted_volume.usd ? formatCompact(t.converted_volume.usd) : '-'}</td>
+<td style="text-align: right; color: var(--secondary-text-color); font-size: 0.8rem;">${spread}%</td>
+<td style="text-align: right;">
+<span class="trust-score ${trustClass}">${t.trust_score}</span>
+</td>
+</tr>
+`;
+}).join('');
+
+elements.tableBody.innerHTML = html;
+}
+
+// Start
+init();
+})();
+</script></body>
+</html>

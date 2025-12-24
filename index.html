@@ -1,0 +1,185 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Dashboard</title>
+    <style>
+        :root {
+            --bg-base: #121212;
+            --text-primary: #ffffff;
+            --text-secondary: #a0a0a0;
+            
+            /* Button Colors */
+            --color-btc: #FFD700;
+            --color-eth: #ADD8E6;
+            --color-stable: #008080;
+            --color-btc-eth: #C71585;
+            --color-sol: #A100FF;
+            --color-wrapped: #00C853;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Typography */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #ffffff 0%, #a0a0a0 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.2rem;
+            font-weight: 400;
+        }
+
+        /* Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Buttons */
+        .crypto-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 140px; /* "Large" buttons, exceeding the 100px minimum for visual impact */
+            border-radius: 12px;
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.3); /* Ensure readability on lighter backgrounds */
+        }
+
+        /* Hover Effect: Darken 15% */
+        .crypto-btn:hover {
+            filter: brightness(0.85);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Active/Click effect */
+        .crypto-btn:active {
+            transform: translateY(-1px);
+        }
+
+        /* Specific Color Variants */
+        .btn-btc { background-color: var(--color-btc); }
+        
+        .btn-eth { background-color: var(--color-eth); }
+        
+        .btn-stable { background-color: var(--color-stable); }
+        
+        .btn-btc-eth { background-color: var(--color-btc-eth); }
+        
+        .btn-sol { background-color: var(--color-sol); }
+        
+        .btn-wrapped { background-color: var(--color-wrapped); }
+
+        /* Footer */
+        footer {
+            margin-top: 4rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive Tweaks */
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            .dashboard-grid { grid-template-columns: 1fr; } /* Stacked on mobile */
+            .crypto-btn { min-height: 120px; }
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Crypto Dashboard</h1>
+        <p class="subtitle">Select a section to view detailed data</p>
+    </header>
+
+    <main class="dashboard-grid">
+        <!-- BTC -->
+        <a href="btc.html" class="crypto-btn btn-btc">
+            BTC
+        </a>
+
+        <!-- ETH -->
+        <a href="eth.html" class="crypto-btn btn-eth">
+            ETH
+        </a>
+
+        <!-- Stablecoins -->
+        <a href="stablecoins.html" class="crypto-btn btn-stable">
+            Stablecoins
+        </a>
+
+        <!-- BTC/ETH -->
+        <a href="btc-eth.html" class="crypto-btn btn-btc-eth">
+            BTC/ETH
+        </a>
+
+        <!-- SOL -->
+        <a href="sol.html" class="crypto-btn btn-sol">
+            SOL
+        </a>
+
+        <!-- Wrapped Twins -->
+        <a href="wrapped-twins.html" class="crypto-btn btn-wrapped">
+            Wrapped Twins
+        </a>
+    </main>
+
+    <footer>
+        &copy; 2023 Crypto Dashboard. Fast & Static.
+    </footer>
+
+</body>
+</html>

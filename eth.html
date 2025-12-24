@@ -1,0 +1,590 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETH Dashboard | Crypto Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            /* Theme Colors */
+            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --card-bg-hover: #252525;
+            --border-color: #333333;
+            
+            /* Text Colors */
+            --text-main: #f0f0f0;
+            --text-muted: #888888;
+            
+            /* Accent: ETH Light Blue */
+            --accent-color: #ADD8E6; 
+            --accent-color-dim: rgba(173, 216, 230, 0.1);
+            
+            /* Functional Colors */
+            --success-color: #4ade80;
+            --warning-color: #fbbf24;
+            --error-color: #f87171;
+
+            /* Dimensions & Spacing */
+            --header-height: 70px;
+            --max-width: 1200px;
+            --border-radius: 12px;
+            --card-padding: 24px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-size: 16px;
+            line-height: 1.6;
+            min-height: 100vh;
+            padding-top: var(--header-height); /* Space for fixed header */
+        }
+
+        /* Typography */
+        h1, h2, h3 { color: var(--text-main); margin-bottom: 0.5rem; }
+        h1 { font-size: 36px; font-weight: 700; }
+        h2 { font-size: 28px; font-weight: 700; }
+        h3 { font-size: 22px; font-weight: 600; }
+        p { color: var(--text-muted); margin-bottom: 0; }
+
+        /* Fixed Header */
+        .fixed-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background-color: #121212;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .back-link {
+            color: var(--text-main);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: background 0.2s ease, color 0.2s ease;
+        }
+
+        .back-link:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            letter-spacing: 0.5px;
+        }
+
+        .brand-logo {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: var(--card-padding);
+            margin-bottom: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-main);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 12px;
+        }
+
+        /* Price Display */
+        .price-container {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+        }
+
+        .current-price {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+
+        .price-change {
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .trend-up { color: var(--success-color); }
+        .trend-down { color: var(--error-color); }
+
+        /* Chart Area */
+        .chart-wrapper {
+            position: relative;
+            height: 350px;
+            width: 100%;
+        }
+
+        /* Table Section */
+        .table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        .pool-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px; /* Force scroll on mobile */
+        }
+
+        .pool-table th {
+            text-align: left;
+            padding: 16px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .pool-table td {
+            padding: 16px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-main);
+        }
+
+        .pool-table tbody tr {
+            transition: background 0.2s ease;
+        }
+
+        .pool-table tbody tr:hover {
+            background-color: var(--card-bg-hover);
+        }
+
+        .pool-table td, .pool-table th {
+            white-space: nowrap;
+        }
+
+        .text-right { text-align: right; }
+
+        /* Token Highlights */
+        .token-eth { color: var(--accent-color); font-weight: 700; }
+        .token-usdc { color: #4A90E2; font-weight: 600; }
+        .token-usdt { color: #5CB85C; font-weight: 600; }
+        .token-dai { color: #D4A76A; font-weight: 600; }
+        .token-stable { color: var(--text-main); font-weight: 500; }
+
+        .pool-link {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .pool-link:hover { text-decoration: underline; }
+
+        .apr-badge { font-weight: 600; }
+        .apr-high { color: var(--success-color); }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 20px;
+        }
+
+        /* Utilities */
+        .loading-spinner {
+            border: 3px solid var(--border-color);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+        .status-msg { text-align: center; padding: 2rem; color: var(--text-muted); width: 100%; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            :root { --header-height: 60px; }
+            
+            .fixed-header { padding: 0 15px; }
+            .back-link { font-size: 0.9rem; padding: 6px 12px; }
+            .page-title { font-size: 1rem; }
+            .brand-logo { display: none; }
+            
+            .main-container { padding: 20px 15px; }
+            
+            .card { padding: 16px; border-radius: 8px; }
+            .card-header { flex-direction: column; align-items: flex-start; gap: 15px; }
+            
+            .current-price { font-size: 1.8rem; }
+            .chart-wrapper { height: 250px; }
+            
+            .pool-table th, .pool-table td { padding: 12px 8px; font-size: 0.85rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fixed Header -->
+    <header class="fixed-header">
+        <a href="index.html" class="back-link">← Back to Home</a>
+        <div class="page-title">ETH Dashboard</div>
+        <div class="brand-logo">Crypto Dashboard</div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-container">
+        
+        <!-- Chart Section -->
+        <section class="card">
+            <div class="card-header">
+                <div>
+                    <h3>Price Performance</h3>
+                    <div id="price-container" class="price-container">
+                        <span id="current-price" class="current-price">$0.00</span>
+                        <span id="price-change" class="price-change">0.00%</span>
+                    </div>
+                </div>
+                <div id="chart-status" class="loading-spinner"></div>
+            </div>
+            <div class="chart-wrapper">
+                <canvas id="ethChart"></canvas>
+            </div>
+        </section>
+
+        <!-- Pools Section -->
+        <section class="card">
+            <div class="card-header">
+                <h3>Top Liquidity Pools</h3>
+                <div id="pool-status" class="loading-spinner"></div>
+            </div>
+            <div class="table-wrapper">
+                <table class="pool-table">
+                    <thead>
+                        <tr>
+                            <th>Pool</th>
+                            <th class="text-right">Liquidity</th>
+                            <th class="text-right">Volume (24h)</th>
+                            <th class="text-right">Utilization</th>
+                            <th class="text-right">Est. APR</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pools-body">
+                        <!-- Rows inserted via JS -->
+                    </tbody>
+                </table>
+                <div id="pools-loading" class="status-msg">Loading pools data...</div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        Data from CoinGecko / GeckoTerminal • Updated live
+    </footer>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // Configuration
+            const CONFIG = {
+                COIN_GECKO_API: 'https://api.coingecko.com/api/v3',
+                GECKO_TERMINAL_API: 'https://api.geckoterminal.com/api/v2',
+                NETWORK_ID: 'eth', 
+                SEARCH_QUERIES: ['ETH USDC', 'WETH USDC', 'ETH USDT', 'WETH USDT', 'WETH DAI', 'ETH DAI'],
+                MIN_LIQUIDITY: 1000000, 
+                POOL_LIMIT: 10
+            };
+
+            // Utilities
+            const formatUsd = (val) => {
+                if (!val && val !== 0) return '$0.00';
+                if (val >= 1e9) return '$' + (val / 1e9).toFixed(2) + 'B';
+                if (val >= 1e6) return '$' + (val / 1e6).toFixed(2) + 'M';
+                if (val >= 1e3) return '$' + (val / 1e3).toFixed(1) + 'K';
+                return '$' + val.toFixed(2);
+            };
+
+            const formatPercent = (val) => {
+                const pct = val * 100;
+                return pct.toFixed(2) + '%';
+            };
+
+            const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+            // --- CoinGecko Data Fetching (Price & Chart) ---
+            async function fetchEthData() {
+                try {
+                    // Fetch Current Price
+                    const priceRes = await fetch(`${CONFIG.COIN_GECKO_API}/coins/ethereum?localization=false&tickers=false&community_data=false&developer_data=false`);
+                    if (!priceRes.ok) throw new Error('Price API Error');
+                    const coinData = await priceRes.json();
+
+                    const price = coinData.market_data.current_price.usd;
+                    const change = coinData.market_data.price_change_percentage_24h;
+
+                    document.getElementById('current-price').textContent = formatUsd(price);
+                    const changeEl = document.getElementById('price-change');
+                    changeEl.textContent = (change >= 0 ? '+' : '') + change.toFixed(2) + '%';
+                    
+                    // Apply color classes
+                    changeEl.classList.remove('trend-up', 'trend-down');
+                    changeEl.classList.add(change >= 0 ? 'trend-up' : 'trend-down');
+
+                    // Fetch History
+                    const chartRes = await fetch(`${CONFIG.COIN_GECKO_API}/coins/ethereum/market_chart?vs_currency=usd&days=30&interval=daily`);
+                    if (!chartRes.ok) throw new Error('Chart API Error');
+                    const chartData = await chartRes.json();
+
+                    renderChart(chartData.prices);
+                    document.getElementById('chart-status').classList.add('hidden');
+
+                } catch (err) {
+                    console.error("Fetch Error:", err);
+                    document.getElementById('chart-status').textContent = "Error";
+                    document.getElementById('chart-status').classList.remove('loading-spinner');
+                    document.getElementById('chart-status').style.color = 'var(--error-color)';
+                }
+            }
+
+            function renderChart(prices) {
+                const ctx = document.getElementById('ethChart').getContext('2d');
+                const labels = prices.map(p => {
+                    const date = new Date(p[0]);
+                    return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+                });
+                const dataPoints = prices.map(p => p[1]);
+
+                // Destroy previous instance if exists (basic prevention)
+                if (window.myChartInstance) {
+                    window.myChartInstance.destroy();
+                }
+
+                window.myChartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'ETH Price (USD)',
+                            data: dataPoints,
+                            borderColor: '#ADD8E6', // Accent color
+                            backgroundColor: 'rgba(173, 216, 230, 0.1)',
+                            borderWidth: 2,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointHoverBackgroundColor: '#fff',
+                            pointHoverBorderColor: '#ADD8E6',
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                mode: 'index',
+                                intersect: false,
+                                backgroundColor: '#1e1e1e',
+                                titleColor: '#ADD8E6',
+                                bodyColor: '#f0f0f0',
+                                borderColor: '#333',
+                                borderWidth: 1,
+                                padding: 12,
+                                displayColors: false,
+                                callbacks: {
+                                    label: function(context) {
+                                        return '$' + context.parsed.y.toFixed(2);
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { display: false, drawBorder: false },
+                                ticks: { color: '#666', maxTicksLimit: 6 }
+                            },
+                            y: {
+                                grid: { color: '#333', drawBorder: false },
+                                ticks: { color: '#666', callback: (val) => '$' + val }
+                            }
+                        },
+                        interaction: {
+                            mode: 'nearest',
+                            axis: 'x',
+                            intersect: false
+                        }
+                    }
+                });
+            }
+
+            // --- GeckoTerminal Pool Fetching ---
+            async function fetchEthPools() {
+                try {
+                    const allPools = [];
+
+                    // Search for ETH pairs
+                    for (const query of CONFIG.SEARCH_QUERIES) {
+                        const url = `${CONFIG.GECKO_TERMINAL_API}/search/pools?query=${encodeURIComponent(query)}&network=${CONFIG.NETWORK_ID}`;
+                        const res = await fetch(url);
+                        if (!res.ok) continue;
+                        
+                        const data = await res.json();
+                        if (data.data && Array.isArray(data.data)) {
+                            allPools.push(...data.data);
+                        }
+                        
+                        // Basic rate limiting
+                        await sleep(500);
+                    }
+
+                    // Filter and Normalize
+                    const uniquePools = new Map();
+                    
+                    allPools.forEach(pool => {
+                        const attr = pool.attributes;
+                        const address = attr.address;
+                        const liquidity = parseFloat(attr.reserve_in_usd || 0);
+
+                        if (liquidity < CONFIG.MIN_LIQUIDITY) return;
+
+                        if (uniquePools.has(address)) {
+                            if (uniquePools.get(address).liquidity < liquidity) {
+                                uniquePools.set(address, { ...attr, id: pool.id });
+                            }
+                        } else {
+                            uniquePools.set(address, { ...attr, id: pool.id });
+                        }
+                    });
+
+                    // Convert to array and sort by Volume
+                    const sortedPools = Array.from(uniquePools.values())
+                        .sort((a, b) => parseFloat(b.volume_usd.h24) - parseFloat(a.volume_usd.h24))
+                        .slice(0, CONFIG.POOL_LIMIT);
+
+                    renderPoolsTable(sortedPools);
+                    document.getElementById('pool-status').classList.add('hidden');
+                    document.getElementById('pools-loading').classList.add('hidden');
+
+                } catch (err) {
+                    console.error("Pool Fetch Error:", err);
+                    document.getElementById('pools-loading').textContent = "Failed to load pool data.";
+                    document.getElementById('pool-status').classList.add('hidden');
+                }
+            }
+
+            function renderPoolsTable(pools) {
+                const tbody = document.getElementById('pools-body');
+                tbody.innerHTML = '';
+
+                if (pools.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-right status-msg">No pools found.</td></tr>';
+                    return;
+                }
+
+                pools.forEach(pool => {
+                    const name = pool.name;
+                    const address = pool.address;
+                    const liquidity = parseFloat(pool.reserve_in_usd);
+                    const volume24h = parseFloat(pool.volume_usd?.h24 || 0);
+                    const fee = parseFloat(pool.fee_percent || 0.003); 
+                    
+                    const utilization = volume24h / (liquidity || 1);
+                    const apr = (volume24h * 365 * (fee / 100)) / (liquidity || 1);
+
+                    const formattedName = formatTokenName(name);
+                    
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>
+                            <a href="https://www.geckoterminal.com/eth/pools/${address}" target="_blank" class="pool-link">
+                                ${formattedName}
+                            </a>
+                        </td>
+                        <td class="text-right">${formatUsd(liquidity)}</td>
+                        <td class="text-right">${formatUsd(volume24h)}</td>
+                        <td class="text-right">${formatPercent(utilization)}</td>
+                        <td class="text-right">
+                            <span class="apr-badge ${apr > 0.1 ? 'apr-high' : ''}">${formatPercent(apr)}</span>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            }
+
+            function formatTokenName(name) {
+                return name
+                    .replace(/ETH/g, '<span class="token-eth">ETH</span>')
+                    .replace(/WETH/g, '<span class="token-eth">WETH</span>')
+                    .replace(/USDC/g, '<span class="token-usdc">USDC</span>')
+                    .replace(/USDT/g, '<span class="token-usdt">USDT</span>')
+                    .replace(/DAI/g, '<span class="token-dai">DAI</span>');
+            }
+
+            // --- Initialization ---
+            document.addEventListener('DOMContentLoaded', () => {
+                fetchEthData();
+                fetchEthPools();
+            });
+
+        })();
+    </script>
+</body>
+</html>
